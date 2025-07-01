@@ -124,8 +124,11 @@ function kies(keuze) {
 
 function toonFouten() {
     const foutenContainer = document.getElementById("fouten-lijst");
+    const downloadKnop = document.getElementById("download-fouten");
+
     if (foutenLijst.length === 0) {
         foutenContainer.innerText = "Goed gedaan! Geen fouten gemaakt.";
+        downloadKnop.style.display = "none";
         return;
     }
 
@@ -135,4 +138,20 @@ function toonFouten() {
     });
     html += "</ul>";
     foutenContainer.innerHTML = html;
+
+    // Toon de downloadknop en koppel de klikactie
+    downloadKnop.style.display = "inline-block";
+    downloadKnop.onclick = downloadFoutenlijstAlsExcel;
+}
+
+}
+
+function downloadFoutenlijstAlsExcel() {
+    if (foutenLijst.length === 0) return;
+
+    const ws = XLSX.utils.json_to_sheet(foutenLijst);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Foutenlijst");
+
+    XLSX.writeFile(wb, "foutenlijst.xlsx");
 }
