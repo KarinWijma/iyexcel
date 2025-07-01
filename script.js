@@ -124,33 +124,15 @@ function kies(keuze) {
 
 function toonFouten() {
     const foutenContainer = document.getElementById("fouten-lijst");
-    const exportKnop = document.getElementById("exporteer-fouten");
-
     if (foutenLijst.length === 0) {
         foutenContainer.innerText = "Goed gedaan! Geen fouten gemaakt.";
-        exportKnop.style.display = "none";
         return;
     }
 
     let html = "<h3>Fout beantwoorde woorden:</h3><ul>";
     foutenLijst.forEach(fout => {
-        html += `<li>${fout.woord} (gekozen: ${fout.gekozen}, correct: ${fout.correct})</li>`;
+        html += `<li>${fout.woord}</li>`;
     });
     html += "</ul>";
     foutenContainer.innerHTML = html;
-
-    exportKnop.style.display = "inline-block";
 }
-
-}
-
-document.getElementById("exporteer-fouten").addEventListener("click", () => {
-    if (foutenLijst.length === 0) return;
-
-    const ws = XLSX.utils.json_to_sheet(foutenLijst);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Foutenlijst");
-
-    XLSX.writeFile(wb, "foutenlijst.xlsx");
-});
-
