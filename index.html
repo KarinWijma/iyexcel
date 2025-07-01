@@ -3,26 +3,28 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>EI of IJ Spel</title>
+    <title>I of Y Spel</title>
     <link rel="stylesheet" href="styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js
 </head>
 <body>
     <div class="container">
         <h1>Vul in: I of Y?</h1>
 
-        <!-- Nieuw: Bestand uploaden -->
         <label for="bestand-upload">Upload je Excel-bestand:</label>
         <input type="file" id="bestand-upload" accept=".xlsx" />
 
         <div id="commentaar"></div>
         <div id="woord-container"></div>
+
         <div id="keuzes" style="display: none;">
-            <button onclick="kies('i')">i</button>
+            <button onclick="k')">i</button>
             <button onclick="kies('y')">y</button>
         </div>
+
         <div id="feedback"></div>
         <div id="fouten-lijst"></div>
+        <button id="download-fouten" style="display:none;">Download foutenlijst als Excel</button>
     </div>
 
     <script src="script.js"></script>
