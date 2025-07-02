@@ -1,30 +1,131 @@
+
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>EI of IJ Spel</title>
-    <link rel="stylesheet" href="styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Spelling Oefenspel: i of y</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        #wordDisplay { font-size: 36px; margin: 20px; }
+        .highlight { color: red; font-weight: bold; }
+        #buttons button { font-size: 20px; margin: 10px; padding: 10px 20px; }
+        #foutWoorden { margin-top: 30px; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Vul in: I of Y?</h1>
-
-        <!-- Nieuw: Bestand uploaden -->
-        <label for="bestand-upload">Upload je Excel-bestand:</label>
-        <input type="file" id="bestand-upload" accept=".xlsx" />
-
-        <div id="commentaar"></div>
-        <div id="woord-container"></div>
-        <div id="keuzes" style="display: none;">
-            <button onclick="kies('i')">i</button>
-            <button onclick="kies('y')">y</button>
-        </div>
-        <div id="feedback"></div>
-        <div id="fouten-lijst"></div>
+    <h1>Spelling Oefenspel: i of y</h1>
+    <input type="file" id="fileInput" accept=".xlsx" />
+    <div id="hint" style="margin: 20px; font-size: 18px; color: blue;"></div>
+    <div id="wordDisplay"></div>
+    <div id="buttons">
+        <button onclick="checkAnswer('i')">i</button>
+        <button onclick="checkAnswer('y')">y</button>
     </div>
+    <div id="foutWoorden"></div>
 
-    <script src="script.js"></script>
+    <script>
+        let words = [];
+        let todoWords = [];
+        let currentWord = "";
+        let currentCommentaar = "";
+        let missingIndex = -1;
+        let correctLetter = "";
+        let foutWoorden = [];
+
+        document.getElementById('fileInput').addEventListener('change', handleFile, false);
+
+        function handleFile(e) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(sheet);
+                words = json.filter(row => row.woord).map(row => ({
+                    woord: row.woord,
+                    commentaar: row.commentaar || ""
+                }));
+                todoWords = [...words];
+                shuffle(todoWords);
+                showNextWord();
+            };
+            reader.readAsArrayBuffer(e.target.files[0]);
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function showNextWord() {
+            if (todoWords.length === 0) {
+                document.getElementById('hint').textContent = "";
+                document.getElementById('wordDisplay').innerHTML = "🎉 Het spel is klaar!";
+                document.getElementById('buttons').style.display = "none";
+                showFoutWoorden();
+                return;
+            }
+
+            const current = todoWords.shift();
+            currentWord = current.woord;
+            currentCommentaar = current.commentaar;
+            [missingIndex, correctLetter] = findMissingLetter(currentWord);
+
+            document.getElementById('hint').textContent = currentCommentaar ? "Hint: " + currentCommentaar : "";
+            const masked = maskWord(currentWord, missingIndex);
+            document.getElementById('wordDisplay').textContent = masked;
+            document.getElementById('buttons').style.display = "block";
+        }
+
+        function findMissingLetter(word) {
+            for (let i = 0; i < word.length; i++) {
+                const ch = word[i].toLowerCase();
+                if (ch === 'i' || ch === 'y') {
+                    return [i, ch];
+                }
+            }
+            return [-1, ""];
+        }
+
+        function maskWord(word, index) {
+            if (index === -1) return word;
+            return word.slice(0, index) + '__' + word.slice(index + 1);
+        }
+
+        function checkAnswer(guess) {
+            document.getElementById('buttons').style.display = "none";
+            if (guess.toLowerCase() === correctLetter) {
+                document.getElementById('wordDisplay').textContent = currentWord;
+            } else {
+                displayWordWithHighlight(currentWord, missingIndex);
+                if (!todoWords.some(w => w.woord === currentWord)) {
+                    todoWords.push({woord: currentWord, commentaar: currentCommentaar});
+                }
+                if (!foutWoorden.some(w => w.woord === currentWord)) {
+                    foutWoorden.push({woord: currentWord, commentaar: currentCommentaar});
+                }
+            }
+            setTimeout(showNextWord, 1500);
+        }
+
+        function displayWordWithHighlight(word, index) {
+            const before = word.slice(0, index);
+            const highlight = word.slice(index, index + 1);
+            const after = word.slice(index + 1);
+            document.getElementById('wordDisplay').innerHTML = before + "<span class='highlight'>" + highlight + "</span>" + after;
+        }
+
+        function showFoutWoorden() {
+            if (foutWoorden.length === 0) return;
+            const div = document.getElementById('foutWoorden');
+            div.innerHTML = "<h3>Fout beantwoorde woorden:</h3><ul>" +
+                foutWoorden.map(w => "<li>" + w.woord + "</li>").join('') +
+                "</ul>";
+        }
+    </script>
 </body>
 </html>
